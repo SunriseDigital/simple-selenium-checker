@@ -14,10 +14,11 @@ const noCatchTest = process.argv.indexOf('--no-catch') >= 0
 let driver;
 test.describe('SSC', () => {
   test.before(() => {
+    Checker.addIgnoreConsoleCheck((log) => log.message.indexOf("favicon.ico") != -1)//default ignore
     Checker.Debug = isDebug
     Checker.DefaultTimeout = 1
     const chromeCapabilities = webdriver.Capabilities.chrome();
-    const args = ["--window-size=1024,768"]
+    const args = ["--window-size=1024,768", "--ignore-certificate-errors"]
     if(!isDebug){
       // args.push('--headless', '--disable-gpu')
     }
@@ -41,7 +42,7 @@ test.describe('SSC', () => {
   test.it('should succeed when giving correct page data.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
           {exists: By.css(".delay-content"), timeout: 8000},
@@ -70,7 +71,7 @@ test.describe('SSC', () => {
   test.it('should fail when you specify an element that is not on the page.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/"
+        url: "https://127.0.0.1:8080/"
       },{
         assertions: [
           {exists: By.css("#foo")},
@@ -85,7 +86,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         actions:[
           {click: By.css(".nav > li:nth-child(2) > a")},
@@ -108,7 +109,7 @@ test.describe('SSC', () => {
   test.it('should fail when the inner text of the element does not match.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       }, {
         assertions: [
           {equals: By.css(".main .col-sm-6:nth-child(2) h3"), value: "Hoge 002"},
@@ -124,7 +125,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         actions:[
           {click: By.css(".nav > li:nth-child(2) > a")},
@@ -148,7 +149,7 @@ test.describe('SSC', () => {
   test.it('should fail when text that is not in the page is specified.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/"
+        url: "https://127.0.0.1:8080/"
       },{
         assertions: [
           {likes: "html", value: "<title>Simple selenium checker - Hoge</title>"} 
@@ -164,7 +165,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         actions:[
           {click: By.css(".nav > li:nth-child(2) > a")},
@@ -188,7 +189,7 @@ test.describe('SSC', () => {
   test.it('should fail when a javascript error was detected.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/javascript-error.html",
+        url: "https://127.0.0.1:8080/javascript-error.html",
       }]
 
       const checker = new Checker(driver)
@@ -203,7 +204,7 @@ test.describe('SSC', () => {
   test.it('should fail when the server return a status code 400 to 599.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/not-exists.html",
+        url: "https://127.0.0.1:8080/not-exists.html",
       }]
 
       const checker = new Checker(driver)
@@ -218,7 +219,7 @@ test.describe('SSC', () => {
   test.it('should be able to perform actions such as click and sendKyes with the actions option.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/form.html",
+        url: "https://127.0.0.1:8080/form.html",
       },{
         assertions: [
           {exists: By.css(".input")},
@@ -231,7 +232,7 @@ test.describe('SSC', () => {
       },{
         assertions: [
           {exists: By.css(".main .col-sm-6:nth-child(1) h3")},
-          {equals: "url", value: "http://127.0.0.1:8080/index.html?name=fooBarTest&send=send"} ,
+          {equals: "url", value: "https://127.0.0.1:8080/index.html?name=fooBarTest&send=send"} ,
         ],
       }]
 
@@ -244,12 +245,12 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
-          {equals: 'url', value: "http://127.0.0.1:8080/"} ,
+          {equals: 'url', value: "https://127.0.0.1:8080/"} ,
           {likes: 'url', value: "127.0.0.1"} ,
-          {notEquals: 'url', value: "http://127.0.0.1:8080/foobar.html"} ,
+          {notEquals: 'url', value: "https://127.0.0.1:8080/foobar.html"} ,
           {notLikes: 'url', value: "foobar"} ,
         ]
       }]
@@ -257,20 +258,20 @@ test.describe('SSC', () => {
       return checker.run(scenario)
     }).then(() => {
       return checker.run([{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
-          {equals: 'url', value: "http://127.0.0.1:8080/hoge.html"} ,
+          {equals: 'url', value: "https://127.0.0.1:8080/hoge.html"} ,
         ]
       }]).catch(err => err).then(err => {
         if(noCatchTest) throw err
         assert(err != undefined)
         assert(err.name == "UnexpectedValue")
-        assert(err.message.indexOf('http://127.0.0.1:8080/hoge.html') >= 0)
+        assert(err.message.indexOf('https://127.0.0.1:8080/hoge.html') >= 0)
       })
     }).then(() => {
       return checker.run([{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
           {likes: 'url', value: "hoge.html"} ,
@@ -283,20 +284,20 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
-          {notEquals: 'url', value: "http://127.0.0.1:8080/"} ,
+          {notEquals: 'url', value: "https://127.0.0.1:8080/"} ,
         ]
       }]).catch(err => err).then(err => {
         if(noCatchTest) throw err
         assert(err != undefined)
         assert(err.name == "UnexpectedValue")
-        assert(err.message.indexOf('http://127.0.0.1:8080/') >= 0)
+        assert(err.message.indexOf('https://127.0.0.1:8080/') >= 0)
       })
     }).then(() => {
       return checker.run([{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
           {notLikes: 'url', value: "127.0.0.1"} ,
@@ -313,10 +314,10 @@ test.describe('SSC', () => {
   test.it('should stop formatting the error when the debug property is true.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
-          {equals: 'url', value: "http://127.0.0.1:8080/hoge.html"} ,
+          {equals: 'url', value: "https://127.0.0.1:8080/hoge.html"} ,
         ]
       }]
 
@@ -326,7 +327,7 @@ test.describe('SSC', () => {
         if(noCatchTest) throw err
         assert(err != undefined)
         assert(err.name == "UnexpectedValue")
-        assert(err.message.indexOf('http://127.0.0.1:8080/hoge.html') >= 0)
+        assert(err.message.indexOf('https://127.0.0.1:8080/hoge.html') >= 0)
       })
     })
   })
@@ -334,7 +335,7 @@ test.describe('SSC', () => {
   test.it('should check partial match with the like keyword of checks option.', () => {
     return Promise.resolve().then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
           {likes: By.css(".main .col-sm-6:nth-child(1) h3"), value: "ome 00"},
@@ -347,7 +348,7 @@ test.describe('SSC', () => {
       return checker.run(scenario)
     }).then(() => {
       const scenario = [{
-        url: "http://127.0.0.1:8080/",
+        url: "https://127.0.0.1:8080/",
       },{
         assertions: [
           {likes: By.css(".main .col-sm-6:nth-child(1) h3"), value: "bar"},
@@ -395,7 +396,7 @@ test.describe('SSC', () => {
 
       const checker = new Checker(driver)
       checker.placeholder = {
-        'url': 'http://127.0.0.1:8080',
+        'url': 'https://127.0.0.1:8080',
         'assertions_by': By.css(".main .col-sm-6:nth-child(2) h3"),
         'assertions_equals': 'Foo 001',
         'assertions_likes': 'oo 00',
@@ -407,13 +408,13 @@ test.describe('SSC', () => {
 
       const resScenario = []
       scenario.forEach(scenarioItem => resScenario.push(checker._applyPlaceholder(scenarioItem)))
-      assert(resScenario[0].url === 'http://127.0.0.1:8080/')
+      assert(resScenario[0].url === 'https://127.0.0.1:8080/')
       assert(resScenario[1].actions[0].click.toString() === By.css(".nav > li:nth-child(2) > a").toString())
       assert(resScenario[2].assertions[0].exists.toString() === By.css(".main .col-sm-6:nth-child(2) h3").toString())
       assert(resScenario[2].assertions[1].value === 'Foo 001')
       assert(resScenario[2].assertions[2].value === 'oo 00')
       assert(resScenario[2].assertions[3].value.value === null)
-      assert(resScenario[3].url === 'http://127.0.0.1:8080/form.html')
+      assert(resScenario[3].url === 'https://127.0.0.1:8080/form.html')
       assert(resScenario[4].actions[0].sendKeys.toString() === By.css(".input").toString())
 
       return checker.run(scenario)
@@ -423,7 +424,7 @@ test.describe('SSC', () => {
   test.it('should when there is an execif directive, evaluate whether to execute that block.', () => {
     const checker = new Checker(driver)
     let promise =  Promise.resolve().then(() => {
-      return driver.get('http://127.0.0.1:8080')
+      return driver.get('https://127.0.0.1:8080')
     }).then(() => {
       // exists
       return checker._testExecif([
@@ -496,7 +497,7 @@ test.describe('SSC', () => {
         [{notExists: By.css('header')}]
       ]).then(res => assert(res === false))
     }).then(() => {
-      return driver.get('http://127.0.0.1:8080/options.html')
+      return driver.get('https://127.0.0.1:8080/options.html')
     }).then(() => {
       //checked true
       return checker._testExecif([
@@ -543,7 +544,7 @@ test.describe('SSC', () => {
     promise = promise.then(() => {
       // execute checks
       return checker.run([{
-        url: 'http://127.0.0.1:8080/'
+        url: 'https://127.0.0.1:8080/'
       },{
         scenario: [{
           execif: [[{exists: By.css('header')}]],
@@ -559,7 +560,7 @@ test.describe('SSC', () => {
     }).then(() => {
       //ignore checks
       return checker.run([{
-        url: 'http://127.0.0.1:8080/'
+        url: 'https://127.0.0.1:8080/'
       },{
         scenario: [{
           execif: [[{notExists: By.css('header')}]],
@@ -574,12 +575,12 @@ test.describe('SSC', () => {
     .then(() => {
       // execute url
       return checker.run([{
-        url: 'http://127.0.0.1:8080/'
+        url: 'https://127.0.0.1:8080/'
       },{
         scenario: [{
           execif: [[{exists: By.css('header')}]]
         },{
-          url: "http://127.0.0.1:8080/foo.html"
+          url: "https://127.0.0.1:8080/foo.html"
         }]
       },{
         assertions: [
@@ -594,12 +595,12 @@ test.describe('SSC', () => {
     }).then(() => {
       // ignore url
       return checker.run([{
-        url: 'http://127.0.0.1:8080/foo.html'
+        url: 'https://127.0.0.1:8080/foo.html'
       },{
         scenario: [{
           execif: [[{notExists: By.css('header')}]]
         },{
-          url: "http://127.0.0.1:8080/form.html"
+          url: "https://127.0.0.1:8080/form.html"
         }]
       },{
         assertions: [
@@ -614,7 +615,7 @@ test.describe('SSC', () => {
     }).then(() => {
       // execute action
       return checker.run([{
-        url: 'http://127.0.0.1:8080/foo.html'
+        url: 'https://127.0.0.1:8080/foo.html'
       },{
         scenario: [{
           execif: [[{exists: By.css('header')}]]
@@ -636,7 +637,7 @@ test.describe('SSC', () => {
     }).then(() => {
       // ignore action
       return checker.run([{
-        url: 'http://127.0.0.1:8080/'
+        url: 'https://127.0.0.1:8080/'
       },{
         scenario: [
           {execif: [[{notExists: By.css('header')}]]
@@ -667,10 +668,10 @@ test.describe('SSC', () => {
     return Promise.resolve().then(() => {
       // second level
       return checker.run([{
-        url: "http://127.0.0.1:8080/"
+        url: "https://127.0.0.1:8080/"
       },{
         scenario: [{
-          url: "http://127.0.0.1:8080/foo.html"
+          url: "https://127.0.0.1:8080/foo.html"
         },{
           assertions: [
             {exists: By.css("#foo")},
@@ -685,15 +686,15 @@ test.describe('SSC', () => {
     }).then(() => {
       // third level
       return checker.run([{
-        url: "http://127.0.0.1:8080/"
+        url: "https://127.0.0.1:8080/"
       },{
         scenario: [{
-          url: "http://127.0.0.1:8080/foo.html"
+          url: "https://127.0.0.1:8080/foo.html"
         },{
           assertions: [{exists: By.css("#foo")}]
         },{
           scenario: [{
-            url: "http://127.0.0.1:8080/form.html"
+            url: "https://127.0.0.1:8080/form.html"
           },{
             assertions: [
               {exists: By.css(".input[name=name]")},
@@ -709,15 +710,15 @@ test.describe('SSC', () => {
     }).then(() => {
       //execif third level
       return checker.run([{
-        url: "http://127.0.0.1:8080/"
+        url: "https://127.0.0.1:8080/"
       },{
         scenario: [{
-          url: "http://127.0.0.1:8080/foo.html"
+          url: "https://127.0.0.1:8080/foo.html"
         },{
           assertions: [{exists: By.css("#foo")}]
         },{
           scenario: [{
-            url: "http://127.0.0.1:8080/form.html"
+            url: "https://127.0.0.1:8080/form.html"
           },{
             execif: [[{exists: By.css('#home')}]]
           },{
@@ -727,7 +728,7 @@ test.describe('SSC', () => {
           }]
         }]
       },{
-        url: "http://127.0.0.1:8080/"
+        url: "https://127.0.0.1:8080/"
       },{
         assertions: [{exists: By.css("#foo")}]
       }]).catch(err => err).then(err => {
@@ -742,9 +743,9 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
-          {equals: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "http://127.0.0.1:8080/foo.html")},
+          {equals: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "https://127.0.0.1:8080/foo.html")},
           {equals: By.css("header"), value: attr("class", "page-header")},
           {equals: By.css(".nav"), value: attr("class", "nav nav-pills")},
           {equals: By.css(".nav"), value: attr("class", "nav")},
@@ -757,7 +758,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {likes: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "/foo.html")},
           {likes: By.css("header"), value: attr("class", "ge-head")},
@@ -777,17 +778,17 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notEquals: By.css(".nav > li:nth-child(1) > a"), value: 'Bar'},
           {notEquals: By.css(".nav > li:nth-child(2) > a"), value: 'Bar'},
-          {notEquals: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "http://127.0.0.1:8080/bar.html")},
+          {notEquals: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "https://127.0.0.1:8080/bar.html")},
           {notEquals: By.css("header"), value: attr("class", "page-footer")},
         ]},
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notEquals: By.css(".nav > li:nth-child(1) > a"), value: 'Home'}
         ]},
@@ -799,30 +800,30 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
-          {notEquals: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "http://127.0.0.1:8080/foo.html")},
+          {notEquals: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "https://127.0.0.1:8080/foo.html")},
         ]},
       ]).catch(err => err).then(err => {
         if(noCatchTest) throw err
         assert(err !== undefined)
         assert(err.name == "UnexpectedValue")
-        assert(err.message.indexOf('http://127.0.0.1:8080/foo.html') >= 0)
+        assert(err.message.indexOf('https://127.0.0.1:8080/foo.html') >= 0)
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notLikes: By.css(".nav > li:nth-child(1) > a"), value: 'Bar'},
           {notLikes: By.css(".nav > li:nth-child(2) > a"), value: 'Bar'},
-          {notLikes: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "http://127.0.0.1:8080/bar.html")},
+          {notLikes: By.css(".nav > li:nth-child(2) > a"), value: attr("href", "https://127.0.0.1:8080/bar.html")},
           {notLikes: By.css("header"), value: attr("class", "page-footer")},
           {notLikes: 'html', value: 'foobarfoobar'} 
         ]},
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notLikes: By.css(".nav > li:nth-child(2) > a"), value: 'Foo'},
         ]},
@@ -834,7 +835,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notLikes: By.css("header"), value: attr("class", "page-header")},
         ]},
@@ -846,7 +847,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notLikes: 'html', value: 'Simple selenium checker'} ,
         ]},
@@ -858,14 +859,14 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notExists: By.css(".not-exists")},
         ]},
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {assertions: [
           {notExists: By.css("body")},
         ]},
@@ -881,14 +882,14 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {equals: By.css(".checkbox-inline input[name=checkbox]"), values: ['checkbox2']},
         ]},
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {equals: By.css(".checkbox-inline input[name=checkbox]"), values: ['checkbox1', 'checkbox2']},
         ]},
@@ -900,7 +901,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {check: By.css(".checkbox-inline input[name=checkbox]"), values: ['checkbox1', 'checkbox2', 'checkbox3']},
         ]},
@@ -922,7 +923,7 @@ test.describe('SSC', () => {
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {clear: By.css(".checkbox-inline input[name=checkbox]")},
         ]},
@@ -954,7 +955,7 @@ test.describe('SSC', () => {
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {clear: By.css(".checkbox-inline input[name=checkbox]")},
         ]},
@@ -973,7 +974,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {clear: By.css(".checkbox-inline input[name=checkbox]")},
         ]},
@@ -997,14 +998,14 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {equals: By.css(".radio-inline input[name=radio]"), value: 'radio2'},
         ]},
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {equals: By.css(".radio-inline input[name=radio]"), value: 'radio1'},
         ]},
@@ -1016,7 +1017,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {check: By.css(".radio-inline input[name=radio]"), value: 'radio1'},
         ]},
@@ -1033,7 +1034,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {check: By.css(".radio-inline input[name=radio]"), value: 'radio1'},
         ]},
@@ -1054,7 +1055,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {equals: By.css(".select-single"), value: 'option1'},
           {equals: By.css(".select-single"), value: 'option2'},
@@ -1067,7 +1068,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {select: By.css(".select-single"), value: 'option3'},
         ]},
@@ -1083,7 +1084,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {selected: By.css(".select-single"), value: 'option1'} ,
           {selected: By.css(".select-single"), value: 'option2'} ,
@@ -1097,7 +1098,7 @@ test.describe('SSC', () => {
     })
     .then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {unselected: By.css(".select-single"), value: 'option2'} ,
           {unselected: By.css(".select-single"), value: 'option3'} ,
@@ -1116,7 +1117,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {equals: By.css(".select-multiple"), values: ['option2', 'option3']},
           {equals: By.css(".select-multiple"), values: ['option1']},
@@ -1129,7 +1130,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {assertions: [
           {selected: By.css(".select-multiple"), values: ['option2']} ,
           {selected: By.css(".select-multiple"), values: ['option3']} ,
@@ -1143,7 +1144,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {clear: By.css(".select-multiple")},
           {select: By.css(".select-multiple"), values: ['option2']},
@@ -1161,7 +1162,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/options.html"},
+        {url: "https://127.0.0.1:8080/options.html"},
         {actions: [
           {clear: By.css(".select-multiple")},
         ]},
@@ -1206,7 +1207,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
        return checker.run([
-        {url: "http://127.0.0.1:8080/alert.html"},
+        {url: "https://127.0.0.1:8080/alert.html"},
         {actions: [
           {click: By.css("#alert")},
           {alert: "accept", timeout: 3000}
@@ -1217,7 +1218,7 @@ test.describe('SSC', () => {
        ])
     }).then(() => {
        return checker.run([
-        {url: "http://127.0.0.1:8080/alert.html"},
+        {url: "https://127.0.0.1:8080/alert.html"},
         {actions: [
           {click: By.css("#confirm")},
           {alert: "accept", timeout: 3000}
@@ -1228,7 +1229,7 @@ test.describe('SSC', () => {
        ])
     }).then(() => {
        return checker.run([
-        {url: "http://127.0.0.1:8080/alert.html"},
+        {url: "https://127.0.0.1:8080/alert.html"},
         {actions: [
           {click: By.css("#confirm")},
           {alert: "dismiss", timeout: 3000}
@@ -1244,7 +1245,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/frame.html"},
+        {url: "https://127.0.0.1:8080/frame.html"},
         {actions: [
           {switchTo: By.css("#index_frame")},
         ]},
@@ -1260,7 +1261,7 @@ test.describe('SSC', () => {
       })
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/frame.html"},
+        {url: "https://127.0.0.1:8080/frame.html"},
         {actions: [
           {switchTo: By.css("#index_frame")},
         ]},
@@ -1287,7 +1288,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/"},
+        {url: "https://127.0.0.1:8080/"},
         {},
         {},
        ]).catch(err => err).then(err => {
@@ -1300,7 +1301,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/scroll.html"},
+        {url: "https://127.0.0.1:8080/scroll.html"},
         {actions: [
           {scrollTo: {x:200, y:500}}
         ]},
@@ -1311,7 +1312,7 @@ test.describe('SSC', () => {
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/scroll.html"},
+        {url: "https://127.0.0.1:8080/scroll.html"},
         {actions: [
           {scrollTo: {x:0, y:0}},
           {scrollTo: {x:150}}
@@ -1323,7 +1324,7 @@ test.describe('SSC', () => {
       ])
     }).then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/scroll.html"},
+        {url: "https://127.0.0.1:8080/scroll.html"},
         {actions: [
           {scrollTo: {x:0, y:0}},
           {scrollTo: By.css(".bottom")}
@@ -1340,7 +1341,7 @@ test.describe('SSC', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
       return checker.run([
-        {url: "http://127.0.0.1:8080/foreach.html"},
+        {url: "https://127.0.0.1:8080/foreach.html"},
         {foreach: By.css("#foreach-test li>a"), scenario:[
           {execif: [ 
             [{exists: By.css('#contents')}],
@@ -1355,7 +1356,7 @@ test.describe('SSC', () => {
         ]},
       ]).then(() => {
         return checker.run([
-          {url: "http://127.0.0.1:8080/foreach.html"},
+          {url: "https://127.0.0.1:8080/foreach.html"},
           {foreach: By.css("#select-link option"), scenario:[
             {execif: [ 
               [{exists: By.css('#contents')}],
@@ -1376,7 +1377,7 @@ test.describe('SSC', () => {
   test.it('should when there is an while directive, operation continues as long as the condition is satisfied', () => {
     const checker = new Checker(driver)
     return Promise.resolve().then(() => {
-      return driver.get("http://127.0.0.1:8080/transit-page.html")
+      return driver.get("https://127.0.0.1:8080/transit-page.html")
     }).then(() => {
       return checker.run([
         {while: [
@@ -1390,6 +1391,59 @@ test.describe('SSC', () => {
           {exists: By.css("#search-target")},
         ]}
       ])
+    })
+  })
+
+  test.it('Confirm existence of "Failed to load resource".', () => {
+    const checker = new Checker(driver)
+    return Promise.resolve().then(() => {
+      return driver.get("https://127.0.0.1:8080/failed-to-load-resource.html")
+    }).then(() => {
+      return checker.run([
+        {actions: [
+          {scrollTo: {x:1}}
+        ]},
+      ]).catch(err => err).then(err => {
+        if(noCatchTest) throw err
+        assert(err != undefined)
+        assert(err.name == "ExistsError")
+        assert(err.message.indexOf("Failed to load resource") != -1)
+      })
+    })
+  })
+
+  test.it('Confirm existence of "Mixed Content".', () => {
+    const checker = new Checker(driver)
+    return Promise.resolve().then(() => {
+      return driver.get("https://127.0.0.1:8080/mixed-content.html")
+    }).then(() => {
+      return checker.run([
+        {actions: [
+          {scrollTo: {x:1}}
+        ]},
+      ]).catch(err => err).then(err => {
+        if(noCatchTest) throw err
+        assert(err != undefined)
+        assert(err.name == "ExistsError")
+        assert(err.message.indexOf("Mixed Content") != -1)
+      })
+    })
+  })
+
+  test.it('Added to "IgnoreConsoleCheck" are ignored during console check.', () => {
+    var checker = new Checker(driver)
+    checker.addIgnoreConsoleCheck(log => log.message.indexOf("Mixed Content") != -1)
+    return Promise.resolve().then(() => {
+      return driver.get("https://127.0.0.1:8080/mixed-content.html")
+    }).then(() => {
+      return checker.run([
+        {actions: [
+          {scrollTo: {x:1}}
+        ]},
+      ]).catch(err => err).then(err => {
+        if(noCatchTest) throw err
+        assert(err == undefined)
+      })
     })
   })
 })

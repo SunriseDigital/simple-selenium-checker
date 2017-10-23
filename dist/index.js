@@ -842,10 +842,16 @@ var Key = _seleniumWebdriver2.default.Key;
 
 var Checker = function () {
   function Checker(driver) {
+    var _this = this;
+
     _classCallCheck(this, Checker);
 
     this.driver = driver;
     this.debug = Checker.Debug;
+    this.ignoreConsoleCheck = [];
+    Checker.IgnoreConsoleCheck.forEach(function (func) {
+      return _this.addIgnoreConsoleCheck(func);
+    });
   }
 
   _createClass(Checker, [{
@@ -862,11 +868,11 @@ var Checker = function () {
   }, {
     key: 'waitAlert',
     value: function waitAlert(timeout) {
-      var _this = this;
+      var _this2 = this;
 
       if (timeout === undefined) timeout = Checker.DefaultTimeout;
       return this.driver.wait(until.alertIsPresent(), timeout).then(function () {
-        return _this.driver.switchTo().alert();
+        return _this2.driver.switchTo().alert();
       });
     }
   }, {
@@ -916,11 +922,11 @@ var Checker = function () {
   }, {
     key: 'waitDissapearElements',
     value: function waitDissapearElements(locator, timeout) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (timeout === undefined) timeout = Checker.DefaultTimeout;
       var cond = new _seleniumWebdriver2.default.Condition(locator + ' disappear from the screen.', function () {
-        return _this2.driver.findElements(locator).then(function (elems) {
+        return _this3.driver.findElements(locator).then(function (elems) {
           return elems.length === 0;
         });
       });
@@ -946,12 +952,12 @@ var Checker = function () {
   }, {
     key: 'waitElements',
     value: function waitElements(locator, count, timeout) {
-      var _this3 = this;
+      var _this4 = this;
 
       if (count === undefined) count = 1;
       if (timeout === undefined) timeout = Checker.DefaultTimeout;
       var cond = new _seleniumWebdriver2.default.Condition(_util2.default.format('for %s to be located %s', count > 1 ? count + " elements" : 'element', locator), function () {
-        return _this3.driver.findElements(locator).then(function (elems) {
+        return _this4.driver.findElements(locator).then(function (elems) {
           if (elems.length >= count) {
             return elems;
           }
@@ -965,11 +971,11 @@ var Checker = function () {
   }, {
     key: 'waitElement',
     value: function waitElement(locator, timeout) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (timeout === undefined) timeout = Checker.DefaultTimeout;
       return this.driver.wait(until.elementLocated(locator), timeout).then(function (elem) {
-        return _this4.driver.wait(until.elementIsVisible(elem), timeout);
+        return _this5.driver.wait(until.elementIsVisible(elem), timeout);
       });
     }
   }, {
@@ -1011,13 +1017,13 @@ var Checker = function () {
   }, {
     key: '_testGroup',
     value: function _testGroup(conditions) {
-      var _this5 = this;
+      var _this6 = this;
 
       var promise = Promise.resolve(false);
       conditions.forEach(function (item) {
         promise = promise.then(function (res) {
           if (res === true) return true; //OR
-          return _this5._testItem(item);
+          return _this6._testItem(item);
         });
       });
 
@@ -1026,14 +1032,14 @@ var Checker = function () {
   }, {
     key: '_testExecif',
     value: function _testExecif(conditions) {
-      var _this6 = this;
+      var _this7 = this;
 
       var promise = Promise.resolve(true);
       if (conditions) {
         conditions.forEach(function (group) {
           promise = promise.then(function (res) {
             if (res === false) return false; //AND
-            return _this6._testGroup(group);
+            return _this7._testGroup(group);
           });
         });
       }
@@ -1043,18 +1049,18 @@ var Checker = function () {
   }, {
     key: '_execForeach',
     value: function _execForeach(elems, item) {
-      var _this7 = this;
+      var _this8 = this;
 
       var promise = Promise.resolve();
       elems.forEach(function (value, index) {
         promise = promise.then(function () {
-          return _this7.driver.findElements(item.foreach);
+          return _this8.driver.findElements(item.foreach);
         }).then(function (targets) {
           return targets[index];
         }).then(function (elem) {
           return elem.click();
         }).then(function () {
-          return _this7.run(item.scenario);
+          return _this8.run(item.scenario);
         });
       });
 
@@ -1063,12 +1069,12 @@ var Checker = function () {
   }, {
     key: 'executeWhile',
     value: function executeWhile(promise, item) {
-      var _this8 = this;
+      var _this9 = this;
 
       return promise.then(function (res) {
         if (res === true) {
-          return _this8.run(item.scenario).then(function () {
-            return _this8.executeWhile(_this8._testExecif(item.while), item);
+          return _this9.run(item.scenario).then(function () {
+            return _this9.executeWhile(_this9._testExecif(item.while), item);
           });
         } else {
           return Promise.resolve();
@@ -1078,7 +1084,7 @@ var Checker = function () {
   }, {
     key: 'run',
     value: function run(scenario, promise) {
-      var _this9 = this;
+      var _this10 = this;
 
       if (!promise) {
         promise = Promise.resolve();
@@ -1087,16 +1093,16 @@ var Checker = function () {
       scenario.forEach(function (item) {
         if (item.foreach) {
           promise = promise.then(function () {
-            return _this9.driver.findElements(item.foreach);
+            return _this10.driver.findElements(item.foreach);
           }).then(function (elems) {
-            return _this9._execForeach(elems, item);
+            return _this10._execForeach(elems, item);
           });
         } else if (item.while) {
           promise = promise.then(function () {
-            return _this9.executeWhile(_this9._testExecif(item.while), item);
+            return _this10.executeWhile(_this10._testExecif(item.while), item);
           });
         } else if (item.scenario) {
-          promise = _this9.run(item.scenario, promise);
+          promise = _this10.run(item.scenario, promise);
         } else {
           //directive count check.
           var directives = Object.keys(item);
@@ -1109,39 +1115,39 @@ var Checker = function () {
             throw new Error("Illegal directive object. " + JSON.stringify(item));
           }
 
-          item = _this9._applyPlaceholder(item);
+          item = _this10._applyPlaceholder(item);
 
           //execif
           if (item.execif) {
             promise = promise.then(function () {
-              return _this9._testExecif(item.execif);
+              return _this10._testExecif(item.execif);
             });
           } else if (item.url) {
             //Until authenticateAs is officially supported, basic authentication is attempted based on the last displayed URL.
             //see actions.authenticateAs()
-            _this9.lastUrl = item.url;
+            _this10.lastUrl = item.url;
             promise = promise.then(function (res) {
               if (res === false) return false;
-              return _this9.driver.get(item.url);
+              return _this10.driver.get(item.url);
             });
           } else if (item.actions) {
             item.actions.forEach(function (action) {
               promise = promise.then(function (res) {
                 if (res === false) return false;
-                return _this9._detectFunction(actions, action)(_this9, action);
+                return _this10._detectFunction(actions, action)(_this10, action);
               });
             });
 
             promise = promise.then(function () {
-              return _this9.driver.getCurrentUrl().then(function (url) {
-                return _this9.lastUrl = url;
+              return _this10.driver.getCurrentUrl().then(function (url) {
+                return _this10.lastUrl = url;
               });
             });
           } else if (item.assertions) {
             item.assertions.forEach(function (check) {
               promise = promise.then(function (res) {
                 if (res === false) return false;
-                return _this9._detectFunction(assertions, check)(_this9, check);
+                return _this10._detectFunction(assertions, check)(_this10, check);
               });
             });
           }
@@ -1149,15 +1155,27 @@ var Checker = function () {
           //Check javascript and response errors using browser logs.
           promise = promise.then(function (res) {
             if (res === false) return false;
-            return _this9.driver.getCurrentUrl().then(function (url) {
+            return _this10.driver.getCurrentUrl().then(function (url) {
               return new Promise(function (resolve) {
-                _this9.driver.manage().logs().get('browser').then(function (logs) {
+                _this10.driver.manage().logs().get('browser').then(function (logs) {
                   logs.forEach(function (log) {
+                    //skip
+                    if (_this10.ignoreConsoleCheck && _this10.ignoreConsoleCheck.some(function (func) {
+                      return func(log) === true;
+                    })) {
+                      return;
+                    }
+
                     //javascript
                     if (Checker.JsErrorStrings.some(function (err) {
                       return log.message.indexOf(err) >= 0;
                     })) {
                       throw new errors.JavascriptError(log.message);
+                    }
+
+                    //Mixed Content for SSL
+                    if (log.message.indexOf("Mixed Content") != -1) {
+                      throw new errors.ExistsError(log.message);
                     }
 
                     //response
@@ -1169,6 +1187,13 @@ var Checker = function () {
                         }
                       }
                     }
+
+                    //Failed to load resource or GET 404
+                    if (log.message.indexOf("Failed to load resource") != -1) {
+                      throw new errors.ExistsError(log.message);
+                    } else if (log.message.indexOf("GET") != -1 && log.message.indexOf("Not Found") != -1) {
+                      throw new errors.ExistsError(log.message);
+                    }
                   });
                   resolve();
                 });
@@ -1177,13 +1202,13 @@ var Checker = function () {
           });
 
           //Format the error.
-          if (_this9.debug === false) {
+          if (_this10.debug === false) {
             promise = promise.catch(function (err) {
-              return _this9.driver.findElement(By.css('html')).then(function (elem) {
+              return _this10.driver.findElement(By.css('html')).then(function (elem) {
                 return elem.getAttribute('outerHTML');
               }).then(function (html) {
-                return _this9.driver.getCurrentUrl().then(function (url) {
-                  var data = Object.assign({}, _this9.data);
+                return _this10.driver.getCurrentUrl().then(function (url) {
+                  var data = Object.assign({}, _this10.data);
                   delete data.next;
                   var message = url + "\n" + "JSON: " + JSON.stringify(item) + "\n" + "Name: " + err.name + "\n" + "Message: " + err.message + "\n" + html;
                   throw new errors.VerboseError(message, err);
@@ -1220,16 +1245,16 @@ var Checker = function () {
   }, {
     key: '_applyPlaceholderToArray',
     value: function _applyPlaceholderToArray(elems) {
-      var _this10 = this;
+      var _this11 = this;
 
       var newElems = [];
       elems.forEach(function (elem) {
         if (elem.forEach) {
-          newElems.push(_this10._applyPlaceholderToArray(elem));
+          newElems.push(_this11._applyPlaceholderToArray(elem));
         } else {
           var newElem = {};
           for (var elemKey in elem) {
-            newElem[elemKey] = _this10._applyPlaceholderToValue(elem[elemKey]);
+            newElem[elemKey] = _this11._applyPlaceholderToValue(elem[elemKey]);
           }
           newElems.push(newElem);
         }
@@ -1256,6 +1281,11 @@ var Checker = function () {
 
       return newItem;
     }
+  }, {
+    key: 'addIgnoreConsoleCheck',
+    value: function addIgnoreConsoleCheck(func) {
+      this.ignoreConsoleCheck.push(func);
+    }
   }]);
 
   return Checker;
@@ -1263,6 +1293,11 @@ var Checker = function () {
 
 exports.default = Checker;
 
+
+Checker.IgnoreConsoleCheck = [];
+Checker.addIgnoreConsoleCheck = function (func) {
+  return Checker.IgnoreConsoleCheck.push(func);
+};
 
 Checker.JsErrorStrings = ["SyntaxError", "EvalError", "ReferenceError", "RangeError", "TypeError", "URIError"];
 

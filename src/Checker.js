@@ -13,6 +13,8 @@ export default class Checker
   constructor(driver){
     this.driver = driver
     this.debug = Checker.Debug
+    this.ignoreConsoleCheck = []
+    Checker.IgnoreConsoleCheck.forEach(func => this.addIgnoreConsoleCheck(func));
   }
 
   handleAlert(alertAction, timeout){
@@ -262,9 +264,19 @@ export default class Checker
             return new Promise(resolve => {
               this.driver.manage().logs().get('browser').then(logs => {
                 logs.forEach(log => {
+                  //skip
+                  if(this.ignoreConsoleCheck && this.ignoreConsoleCheck.some(func => func(log) === true)){
+                    return
+                  }
+
                   //javascript
                   if(Checker.JsErrorStrings.some(err => log.message.indexOf(err) >= 0)){
                     throw new errors.JavascriptError(log.message)
+                  }
+
+                  //Mixed Content for SSL
+                  if(log.message.indexOf("Mixed Content") != -1){
+                    throw new errors.ExistsError(log.message)
                   }
 
                   //response
@@ -275,6 +287,13 @@ export default class Checker
                         throw new errors.StatusCodeError(log.message)
                       }
                     }
+                  }
+
+                  //Failed to load resource or GET 404
+                  if(log.message.indexOf("Failed to load resource") != -1){
+                    throw new errors.ExistsError(log.message)
+                  } else if (log.message.indexOf("GET") != -1 && log.message.indexOf("Not Found") != -1) {
+                    throw new errors.ExistsError(log.message)
                   }
                 })
                 resolve()
@@ -359,7 +378,15 @@ export default class Checker
 
     return newItem
   }
+
+  addIgnoreConsoleCheck(func)
+  {
+    this.ignoreConsoleCheck.push(func)
+  }
 }
+
+Checker.IgnoreConsoleCheck = []
+Checker.addIgnoreConsoleCheck = (func) => Checker.IgnoreConsoleCheck.push(func);
 
 Checker.JsErrorStrings = [
   "SyntaxError",
