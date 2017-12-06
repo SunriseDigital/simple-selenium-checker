@@ -10,9 +10,17 @@ export class Placeholder
     return this
   }
 
-  apply(holderItem){
+  apply(placeholders){
+    let holderItem = placeholders[this.placeholderKey]
     if(this.appendedTexts.length){
-      return holderItem + this.appendedTexts.join('')
+      return holderItem + this.appendedTexts.reduce((prev, val) => {
+        if (val instanceof Placeholder) {
+          prev += val.apply(placeholders)
+        } else {
+          prev += val
+        }
+        return prev
+      },"")
     } else {
       return holderItem
     }
