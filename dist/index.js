@@ -1228,7 +1228,7 @@ var Checker = function () {
     value: function _applyPlaceholderToValue(value) {
       if (value instanceof _placeholder.Placeholder) {
         if (this.placeholder.hasOwnProperty(value.placeholderKey)) {
-          return value.apply(this.placeholder[value.placeholderKey]);
+          return value.apply(this.placeholder);
         } else {
           throw new Error('Missing ' + value.placeholderKey + ' key in placeholder.');
         }
@@ -1331,22 +1331,30 @@ var Placeholder = exports.Placeholder = function () {
   }
 
   _createClass(Placeholder, [{
-    key: 'append',
+    key: "append",
     value: function append(text) {
       this.appendedTexts.push(text);
       return this;
     }
   }, {
-    key: 'apply',
-    value: function apply(holderItem) {
+    key: "apply",
+    value: function apply(placeholders) {
+      var holderItem = placeholders[this.placeholderKey];
       if (this.appendedTexts.length) {
-        return holderItem + this.appendedTexts.join('');
+        return holderItem + this.appendedTexts.reduce(function (prev, val) {
+          if (val instanceof Placeholder) {
+            prev += val.apply(placeholders);
+          } else {
+            prev += val;
+          }
+          return prev;
+        }, "");
       } else {
         return holderItem;
       }
     }
   }, {
-    key: 'placeholderKey',
+    key: "placeholderKey",
     get: function get() {
       return this.key;
     }

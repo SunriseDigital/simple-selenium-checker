@@ -330,7 +330,7 @@ export default class Checker
   _applyPlaceholderToValue(value){
     if(value instanceof Placeholder){
       if(this.placeholder.hasOwnProperty(value.placeholderKey)){
-        return value.apply(this.placeholder[value.placeholderKey])
+        return value.apply(this.placeholder)
       } else {
         throw new Error('Missing ' + value.placeholderKey + ' key in placeholder.')
       }

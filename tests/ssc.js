@@ -1446,4 +1446,46 @@ test.describe('SSC', () => {
       })
     })
   })
+
+  test.it('should be able to pass both placeholders and text to appendMethod, and concatenate too.', () => {
+    return Promise.resolve().then(() => {
+
+      const scenario = [{
+        url: placeholder('url').append('/append-placeholder.html?').append(placeholder('queryString')).append('=on')
+      },{
+        assertions: [
+          {equals: "url", value: "https://127.0.0.1:8080/append-placeholder.html?query=on"} 
+        ]
+      }]
+      
+      const checker = new Checker(driver)
+      checker.placeholder = {
+        'url': 'https://127.0.0.1:8080',
+        'queryString': 'query',
+      }
+      return checker.run(scenario)
+    })
+  })
+
+  test.it('should be able to use appendMethod from placeholder that passed to appendMethod.', () => {
+    return Promise.resolve().then(() => {
+
+      const scenario = [{
+        url: placeholder('url').append('/').append(placeholder('fileName')).append('?').append(placeholder('queryString').append('_foo')).append('=on')
+      },{
+        assertions: [
+          {equals: "url", value: "https://127.0.0.1:8080/append-placeholder.html?query_foo=on"} 
+        ]
+      }]
+      
+      const checker = new Checker(driver)
+      checker.placeholder = {
+        'url': 'https://127.0.0.1:8080',
+        'fileName': 'append-placeholder.html',
+        'queryString': 'query',
+      }
+      return checker.run(scenario)
+    })
+  })
+
 })
